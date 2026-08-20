@@ -1,0 +1,58 @@
+# Secrets — never commit. See .env.example for the shape.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+token.json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+dist/
+build/
+
+# Node
+node_modules/
+ui/dist/
+ui/.vite/
+
+# Runtime artifacts
+runs/
+exports/
+*.log
+.DS_Store
+
+# Local corpora working dirs (seeded corpora ARE committed; watched drop dirs are not)
+corpora/*/watched/
+
+# Piles uploaded through the review interface. An allowlist, not a pattern: the
+# seeded piles are committed and everything else a reviewer drops in is theirs.
+# The brief forbids third-party documents in this repository, and the easiest
+# way to breach that is `git add -A` after trying the upload box.
+corpora/*
+!corpora/meridian
+!corpora/northwind
+!corpora/identified
+!corpora/ambiguous
+!corpora/unidentifiable
+!corpora/_arrivals
+
+# The full 5.6 MB OFAC SDN download. The curated extract in watchlists/ IS
+# committed; re-fetch the source with `python scripts/curate_watchlist.py --fetch`.
+.cache/
+
+# Editor/tooling local config
+.claude/
+
+# The real OFAC extract, if a developer opts in by running
+# scripts/curate_watchlist.py. The bundled default is the synthetic list;
+# real third-party data does not belong in this repository.
+watchlists/ofac_sdn_extract.json

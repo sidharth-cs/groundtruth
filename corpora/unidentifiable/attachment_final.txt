@@ -1,0 +1,4 @@
+Notes
+
+Item one was discussed at length. Item two was deferred. Item three remains
+with the originating team pending clarification.

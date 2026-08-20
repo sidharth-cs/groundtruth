@@ -1,0 +1,7 @@
+REMITTANCE DETAILS
+
+Account holder: Meridian Componentes Holdings Ltd
+Bank: Valletta Commercial Bank (synthetic)
+IBAN: MT84VALL22013000000000990123456
+SWIFT: VALLMTMT
+Effective from: 5 December 2025

@@ -1,0 +1,12 @@
+SANCTIONS AND ADVERSE MEDIA SCREENING RESULT (RE-SCREEN)
+
+Subject: Meridian Componentes Holdings Ltd
+Screening provider: Internal watchlist service (synthetic)
+Screened on: 2026-08-02
+Result: no match
+
+The alert raised on 2026-06-23 was reviewed and dispositioned as a false
+positive. Name similarity only; date of incorporation and jurisdiction do not
+correspond to the listed entity.
+
+Reviewer: S. Ahmed

@@ -1,0 +1,430 @@
+:root {
+  --bg: #0f1115;
+  --panel: #171a21;
+  --panel-2: #1e222b;
+  --line: #2a2f3a;
+  --text: #e6e9ef;
+  --dim: #8b93a3;
+  --accent: #6ea8fe;
+  --ok: #4ec98a;
+  --warn: #e8b44a;
+  --bad: #e8695f;
+  --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Five rungs, replacing eleven ad hoc decimal font-sizes (9.5px through
+     13.5px) that carried no intentional distinction from one another. */
+  --fs-xs: 10.5px;   /* mono badges: hash codes, status pills, group titles */
+  --fs-sm: 11.5px;   /* meta text: uppercase labels, table headers, fine print */
+  --fs-base: 13px;   /* body text: table cells, paragraphs, buttons, primary UI */
+  --fs-md: 15px;     /* section headings (h2) */
+  --fs-lg: 20px;     /* page title (h1) */
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.app { display: grid; grid-template-columns: 330px 1fr; min-height: 100vh; }
+
+/* sidebar ------------------------------------------------------------ */
+
+.side {
+  background: var(--panel);
+  border-right: 1px solid var(--line);
+  padding: 20px 16px;
+  /* Scrolls independently of the main column. The pile cards, the upload box
+     and the screening box together run well past a laptop viewport, and
+     because .main owns the page scroll the sidebar's overflow was simply
+     unreachable. */
+  max-height: 100vh;
+  overflow-y: auto;
+}
+.brand { font-weight: 650; letter-spacing: -0.01em; margin-bottom: 4px; }
+.brand small { display: block; color: var(--dim); font-weight: 400; font-size: var(--fs-base); }
+
+/* A true new section of the sidebar (as opposed to a sub-label inside one,
+   like "Your own case" inside the Upload tab) gets a rule above it — spacing
+   alone read as one long undifferentiated list once "My investigations" and
+   "Screen one name" were added next to the original pile picker. */
+.label.section {
+  border-top: 1px solid var(--line); padding-top: 18px; margin-top: 26px;
+}
+
+.label {
+  font-size: var(--fs-sm); text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--dim); margin: 22px 0 8px;
+}
+
+.pile {
+  display: flex; justify-content: space-between; align-items: center;
+  width: 100%; text-align: left; cursor: pointer;
+  background: var(--panel-2); color: var(--text);
+  border: 1px solid var(--line); border-radius: 8px;
+  padding: 9px 11px; margin-bottom: 6px; font-size: var(--fs-base);
+}
+.pile:hover { border-color: var(--accent); }
+.pile[aria-pressed="true"] { border-color: var(--accent); background: #1d2532; }
+.pile span { color: var(--dim); font-size: var(--fs-sm); }
+
+.segmented { display: flex; gap: 4px; margin-bottom: 8px; background: var(--panel-2);
+  border: 1px solid var(--line); border-radius: 8px; padding: 3px; }
+.segmented button {
+  flex: 1; cursor: pointer; background: none; border: 0; border-radius: 6px;
+  padding: 6px 8px; font-size: var(--fs-base); color: var(--dim);
+}
+.segmented button.active { background: var(--panel); color: var(--text); }
+
+.case-group-title { font-size: var(--fs-xs); color: var(--dim); margin: 10px 0 4px; }
+.pile.case { position: relative; padding-right: 66px; }
+.archive-toggle { position: absolute; top: 9px; right: 11px; }
+.archived-group summary {
+  cursor: pointer; font-size: var(--fs-sm); color: var(--dim); margin: 10px 0 4px;
+  text-transform: uppercase; letter-spacing: 0.08em;
+}
+
+button.primary {
+  width: 100%; cursor: pointer; margin-top: 12px;
+  background: var(--accent); color: #0b1220; font-weight: 600;
+  border: 0; border-radius: 8px; padding: 10px;
+}
+button.primary:disabled { opacity: 0.5; cursor: default; }
+/* Base rule for every other button — .primary and .upload already had their
+   own :disabled treatment; the general case (including the new per-claim
+   accept buttons) did not, so a settled decision's buttons looked exactly as
+   clickable as an unsettled one's. */
+button:disabled { opacity: 0.5; cursor: default; }
+
+/* main --------------------------------------------------------------- */
+
+.main { padding: 22px 26px 60px; overflow-y: auto; max-height: 100vh; }
+h2 { font-size: var(--fs-md); margin: 26px 0 10px; font-weight: 600; }
+h2:first-child { margin-top: 0; }
+
+.card {
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: 10px; padding: 14px 16px; margin-bottom: 12px;
+}
+
+.banner {
+  border-radius: 10px; padding: 12px 14px; margin-bottom: 16px;
+  border: 1px solid; font-size: var(--fs-base);
+}
+.banner.gate { border-color: var(--warn); background: #241f14; color: #f0d9a4; }
+.banner.done { border-color: var(--ok); background: #14241b; color: #b6e8cd; }
+.banner.stop { border-color: var(--bad); background: #241716; color: #f0bcb7; }
+
+.loading {
+  display: flex; align-items: flex-start; gap: 10px;
+  border: 1px solid var(--accent); border-radius: 10px;
+  background: #172338; color: #cfe0ff;
+  padding: 12px 14px; margin-bottom: 16px; font-size: var(--fs-base);
+}
+.loading > div > div { color: var(--dim); font-size: var(--fs-base); margin-top: 2px; }
+.spinner {
+  width: 15px; height: 15px; margin-top: 2px; flex: 0 0 auto;
+  border: 2px solid #6288be; border-top-color: #d6e5ff;
+  border-radius: 50%; animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* stages ------------------------------------------------------------- */
+
+.stage {
+  display: grid; grid-template-columns: 108px 132px 1fr; gap: 10px;
+  padding: 7px 0; border-bottom: 1px solid var(--line); font-size: var(--fs-base);
+}
+.stage:last-child { border-bottom: 0; }
+.stage b { font-weight: 600; }
+.stage .verb { color: var(--accent); font-family: var(--mono); font-size: var(--fs-base); }
+.stage .verb.halt { color: var(--bad); }
+.stage .verb.retry { color: var(--warn); }
+.stage .detail { color: var(--dim); font-family: var(--mono); font-size: var(--fs-sm); }
+.stage .detail.prose { font-family: inherit; font-size: var(--fs-base); color: var(--text); }
+
+/* checklist summary ---------------------------------------------------- */
+
+.checklist .checkline {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 12px; margin-bottom: 4px;
+}
+.checklist .tally { display: flex; gap: 10px; font-size: var(--fs-base); }
+.checklist .tally .passed { color: var(--ok); }
+.checklist .tally .failed { color: var(--bad); }
+.checklist .tally .blocked { color: var(--warn); }
+.checklist ul.not-evaluated { margin: 8px 0 0; padding: 0; list-style: none; }
+.checklist ul.not-evaluated li {
+  padding: 6px 0; border-top: 1px solid var(--line); font-size: var(--fs-base);
+}
+.checklist ul.not-evaluated .hash { margin-right: 6px; }
+
+/* decisions ---------------------------------------------------------- */
+
+.decision {
+  border: 1px solid var(--line); border-radius: 9px;
+  padding: 12px 14px; margin-bottom: 9px; background: var(--panel);
+}
+.decision.approved { border-left: 3px solid var(--ok); }
+.decision.rejected { border-left: 3px solid var(--bad); opacity: 0.65; }
+.decision.pending  { border-left: 3px solid var(--warn); }
+
+.drow { display: flex; justify-content: space-between; gap: 14px; align-items: flex-start; }
+.dsum { flex: 1; }
+.kind {
+  font-family: var(--mono); font-size: var(--fs-xs); color: var(--dim);
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.state {
+  font-family: var(--mono); font-size: var(--fs-sm); padding: 2px 7px;
+  border-radius: 5px; white-space: nowrap;
+}
+.state.pending  { background: #3a3016; color: var(--warn); }
+.state.approved { background: #12301f; color: var(--ok); }
+.state.rejected { background: #301715; color: var(--bad); }
+
+.actions { display: flex; gap: 7px; margin-top: 10px; flex-wrap: wrap; align-items: center; }
+.actions button, .conflict-claim button {
+  cursor: pointer; border-radius: 7px; padding: 6px 12px; font-size: var(--fs-base);
+  border: 1px solid var(--line); background: var(--panel-2); color: var(--text);
+}
+.actions button.ok:hover, .conflict-claim button.ok:hover { border-color: var(--ok); color: var(--ok); }
+.actions button.no:hover  { border-color: var(--bad); color: var(--bad); }
+.actions select {
+  background: var(--panel-2); color: var(--text); font-family: var(--mono);
+  border: 1px solid var(--line); border-radius: 7px; padding: 6px 8px; font-size: var(--fs-base);
+}
+.note { color: var(--dim); font-size: var(--fs-base); margin-top: 7px; font-style: italic; }
+
+.decision.escalated { border-left: 3px solid var(--accent); }
+.state.escalated { background: #172338; color: var(--accent); }
+.actions button.hold:hover { border-color: var(--warn); color: var(--warn); }
+.reason {
+  margin-top: 8px; width: 100%; background: var(--panel-2); color: var(--text);
+  border: 1px solid var(--line); border-radius: 7px; padding: 6px 9px;
+  font-size: var(--fs-base); font-family: inherit;
+}
+
+/* watchlist alert evidence ------------------------------------------- */
+
+.alert {
+  margin-top: 10px; padding: 9px 11px; border-radius: 8px;
+  background: var(--panel-2); border: 1px solid var(--line);
+}
+.alertline { font-size: var(--fs-base); color: var(--dim); }
+.alertline .weak { color: var(--warn); }
+.identifiers { width: 100%; margin: 8px 0; border-collapse: collapse; font-size: var(--fs-base); }
+.identifiers td { padding: 3px 8px 3px 0; font-family: var(--mono); }
+.identifiers td:first-child { color: var(--dim); font-family: inherit; }
+.identifiers i { color: var(--dim); }
+.cmp.match { color: var(--bad); }        /* a matching identifier corroborates */
+.cmp.mismatch { color: var(--ok); }      /* a mismatch is what discounts */
+.cmp.unavailable { color: var(--warn); } /* and absence is why we escalate */
+.strength { color: var(--dim); font-size: var(--fs-sm); }
+.suggests { font-size: var(--fs-base); color: var(--dim); border-top: 1px solid var(--line); padding-top: 7px; }
+.advisory { margin-top: 4px; font-style: italic; opacity: 0.75; }
+.banner.stop ul { margin: 6px 0 0; padding-left: 18px; font-size: var(--fs-base); }
+
+/* SOP / analyst guidance ------------------------------------------------ */
+
+.sop {
+  margin-top: 8px; border-top: 1px solid var(--line); padding-top: 6px;
+}
+.sop summary {
+  cursor: pointer; font-size: var(--fs-sm); color: var(--accent);
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.sop-note { margin-top: 6px; font-size: var(--fs-base); line-height: 1.5; }
+.sop-note b { display: block; color: var(--text); margin-bottom: 1px; }
+.sop-note div { color: var(--dim); }
+
+/* register ----------------------------------------------------------- */
+
+.section { border-bottom: 1px solid var(--line); padding: 11px 0; }
+.section:last-child { border-bottom: 0; }
+.section header { display: flex; justify-content: space-between; align-items: baseline; }
+.section h3 { margin: 0; font-size: var(--fs-base); font-weight: 600; }
+.hash { font-family: var(--mono); font-size: var(--fs-xs); color: var(--dim); }
+.hash.changed { color: var(--warn); }
+.section pre {
+  margin: 7px 0 0; font-family: var(--mono); font-size: var(--fs-base);
+  color: #c8cfdb; white-space: pre-wrap; line-height: 1.65;
+}
+.disputed { color: var(--warn); }
+
+/* tables ------------------------------------------------------------- */
+
+table { width: 100%; border-collapse: collapse; font-size: var(--fs-base); }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+th { color: var(--dim); font-weight: 500; font-size: var(--fs-sm); text-transform: uppercase; letter-spacing: 0.05em; }
+td.num { text-align: right; font-family: var(--mono); }
+tr.total td { border-bottom: 0; font-weight: 600; }
+
+.pill {
+  display: inline-block; font-family: var(--mono); font-size: var(--fs-xs);
+  padding: 2px 7px; border-radius: 5px; background: var(--panel-2);
+  color: var(--dim); border: 1px solid var(--line);
+}
+.pill.quarantined { color: var(--bad); border-color: var(--bad); }
+.pill.failed { color: var(--warn); border-color: var(--warn); }
+
+.empty { color: var(--dim); font-size: var(--fs-base); padding: 8px 0; }
+.err { color: var(--bad); font-size: var(--fs-base); margin-top: 10px; }
+
+/* self-explaining piles ----------------------------------------------- */
+
+/* Overrides the flex row above: a pile card stacks title, blurb and expectation. */
+.pile { display: block; text-align: left; line-height: 1.45; }
+.ptitle { display: flex; justify-content: space-between; gap: 8px; font-weight: 600; }
+.ptitle span { color: var(--dim); font-weight: 400; font-size: var(--fs-sm); white-space: nowrap; }
+.pblurb { color: var(--dim); font-size: var(--fs-sm); margin-top: 4px; }
+.pexpect { color: var(--accent); font-size: var(--fs-sm); margin-top: 4px; font-family: var(--mono); }
+
+/* upload and ad-hoc screening ----------------------------------------- */
+
+.upload { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.upload input, .upload select, .upload button {
+  background: var(--panel-2); color: var(--text); border: 1px solid var(--line);
+  border-radius: 7px; padding: 7px 9px; font-size: var(--fs-base); font-family: inherit;
+}
+.upload button { cursor: pointer; }
+.upload button:disabled { opacity: 0.45; cursor: default; }
+.upload input[type=file] { padding: 5px; font-size: var(--fs-sm); }
+.doc-checklist { display: flex; flex-wrap: wrap; gap: 5px; }
+.fine { color: var(--dim); font-size: var(--fs-sm); }
+.fine.warn { color: var(--warn); }
+.adhoc { margin-top: 7px; padding-top: 7px; border-top: 1px solid var(--line); }
+.adhoc b { color: var(--text); }
+.verdict { margin-top: 3px; font-family: var(--mono); font-size: var(--fs-sm); }
+.verdict.true_match { color: var(--bad); }
+.verdict.false_positive { color: var(--ok); }
+.verdict.escalate_aoc { color: var(--warn); }
+.why { margin-top: 3px; line-height: 1.4; }
+
+/* provenance ----------------------------------------------------------- */
+
+h2 .hint { font-size: var(--fs-sm); color: var(--dim); font-weight: 400; margin-left: 10px; }
+.traceable { cursor: pointer; border-radius: 4px; }
+.traceable:hover { background: var(--panel-2); }
+.cite {
+  margin-left: 9px; font-size: var(--fs-xs); color: var(--accent);
+  border: 1px solid var(--line); border-radius: 4px; padding: 0 5px;
+}
+.sources { margin: 5px 0 9px; }
+.src {
+  background: var(--panel-2); border: 1px solid var(--line);
+  border-left: 2px solid var(--accent);
+  border-radius: 7px; padding: 8px 10px; margin-top: 5px;
+}
+.srchead { font-size: var(--fs-sm); color: var(--dim); display: flex; gap: 10px; flex-wrap: wrap; }
+.offsets { font-family: var(--mono); }
+.verified { color: var(--ok); }
+.broken { color: var(--bad); font-weight: 600; }
+.excerpt { margin-top: 6px; font-size: var(--fs-base); line-height: 1.6; white-space: pre-wrap; }
+.excerpt .ctx { color: var(--dim); }
+.excerpt mark { background: #2c3a52; color: var(--text); padding: 1px 3px; border-radius: 3px; }
+
+.finding-evidence { margin: 6px 0; }
+.compared {
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 7px;
+  padding: 8px 10px; margin-bottom: 5px;
+}
+.compared-row {
+  display: flex; justify-content: space-between; gap: 12px;
+  padding: 3px 0; font-size: var(--fs-base);
+}
+.compared-row span { color: var(--dim); }
+.compared-row.diff { border-top: 1px solid var(--line); margin-top: 2px; padding-top: 6px; }
+.compared-row.diff span, .compared-row.diff b { color: var(--warn); }
+/* Two-up for the common case (one conflict is almost always two competing
+   claims); wraps to one-per-row on a narrow viewport or a rare 3+-way split —
+   `Conflict.claims` isn't capped at two, so this can't assume exactly two. */
+.conflict-evidence {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px; margin: 6px 0; align-items: start;
+}
+.conflict-claim {
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 7px;
+  padding: 8px 10px;
+}
+.conflict-claim .claim-value { font-weight: 600; margin-bottom: 6px; }
+.conflict-claim .sources { margin: 0 0 8px; }
+.conflict-claim button { width: 100%; }
+.update-evidence { margin: 6px 0; }
+.value-changes { margin: 0; padding: 0; list-style: none; }
+.value-changes li { padding: 4px 0; font-size: var(--fs-base); }
+.value-changes .hash { margin-right: 6px; }
+
+/* document viewer ------------------------------------------------------ */
+
+tr.doc { cursor: pointer; }
+tr.doc:hover td { background: var(--panel-2); }
+tr.doc[aria-expanded="true"] td { background: #1d2532; }
+.nocite { color: var(--warn); font-size: var(--fs-sm); }
+
+button.link {
+  background: none; border: 0; padding: 0; cursor: pointer;
+  color: var(--accent); font-size: var(--fs-sm); font-family: inherit;
+  text-decoration: underline;
+}
+
+.viewer { border-top: 1px solid var(--line); margin-top: 12px; padding-top: 12px; }
+.vhead {
+  display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap;
+  font-size: var(--fs-base); color: var(--dim); margin-bottom: 8px;
+}
+.vhead b { color: var(--text); font-size: var(--fs-base); }
+
+/* The normalised text, exactly as the extractor read it — same string the
+   citation offsets index into. Wrapping is preserved so offsets stay legible. */
+.doctext {
+  margin: 0; padding: 12px 14px; border-radius: 8px;
+  background: var(--panel-2); border: 1px solid var(--line);
+  font-family: var(--mono); font-size: var(--fs-base); line-height: 1.85;
+  white-space: pre-wrap; word-break: break-word;
+  max-height: 460px; overflow-y: auto; color: #c8cfdb;
+}
+.doctext mark {
+  background: #2c3a52; color: var(--text);
+  padding: 1px 3px; border-radius: 3px; position: relative;
+}
+.doctext mark.broken { background: #4a1f1c; outline: 1px solid var(--bad); }
+.doctext mark .tag {
+  font-size: var(--fs-xs); color: var(--accent); margin-left: 5px;
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+
+/* first screen ---------------------------------------------------------- */
+
+.intro { max-width: 720px; }
+.intro h1 { font-size: var(--fs-lg); margin: 0 0 10px; font-weight: 650; letter-spacing: -0.01em; }
+.intro p { margin: 0 0 10px; font-size: var(--fs-base); line-height: 1.6; color: #c8cfdb; }
+.intro p.dim { color: var(--dim); font-size: var(--fs-base); }
+.steps {
+  margin: 18px 0 0; padding-left: 20px;
+  font-size: var(--fs-base); line-height: 1.7; color: var(--dim);
+}
+.steps li { margin-bottom: 5px; }
+.steps b { color: var(--text); font-weight: 600; }
+
+/* reviewer identity and audit trail ------------------------------------- */
+
+.who {
+  width: 100%; background: var(--panel-2); color: var(--text);
+  border: 1px solid var(--line); border-radius: 7px;
+  padding: 7px 9px; font-size: var(--fs-base); font-family: inherit;
+}
+.trail {
+  margin-top: 8px; padding-top: 7px; border-top: 1px solid var(--line);
+  font-size: var(--fs-sm); color: var(--dim);
+}
+.trail b { color: var(--text); font-weight: 600; }
+
+/* what a decision does -------------------------------------------------- */
+
+.effect {
+  margin-top: 8px; font-size: var(--fs-sm); color: var(--dim); line-height: 1.55;
+}

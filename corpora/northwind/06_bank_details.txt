@@ -1,0 +1,7 @@
+REMITTANCE DETAILS
+
+Account holder: Northwind Fulfilment Services Ltd
+Bank: Thameside Commercial Bank (synthetic)
+IBAN: GB29THAM60161331926819
+SWIFT: THAMGB2L
+Effective from: 12 February 2026

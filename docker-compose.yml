@@ -1,0 +1,76 @@
+# One command from a fresh clone to a working system:
+#
+#     docker compose up --build
+#
+# That starts Postgres with pgvector, seeds the synthetic corpora, runs the full
+# verification — which exercises every claim this system makes and prints the
+# gaps it still has — and leaves the review interface running on
+#
+#     http://localhost:8000
+#
+# The verifier exits when it is done; the interface stays up. That is
+# deliberate: a check that never finishes is not a check, and an interface that
+# disappears when it does is not usable.
+
+services:
+  db:
+    # pgvector's own image, pinned to a Postgres major it actually ships for.
+    # Installing the extension against a mismatched major is a real trap: on
+    # this machine pgvector had wheels for 17 and 18 while Postgres 16 was
+    # installed, and CREATE EXTENSION simply failed.
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_USER: doctask
+      POSTGRES_PASSWORD: doctask
+      POSTGRES_DB: doctask
+    ports:
+      # Exposed so you can point psql or a native run at the same database.
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U doctask -d doctask"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://doctask:doctask@db:5432/doctask
+      # The default. No key is required for anything in this repository,
+      # including the whole test suite.
+      LLM_PROVIDER: offline
+    volumes:
+      # Bind-mounted so edits on the host are picked up without a rebuild.
+      - .:/app
+    # `verify` is the default; override with `test`, `mcp`, `web` or `shell`.
+    command: ["verify"]
+
+  web:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://doctask:doctask@db:5432/doctask
+      LLM_PROVIDER: offline
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    command: ["web"]
+    # The interface is the point of this container, so a dead one should not
+    # sit there looking alive in `docker compose ps`.
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request;urllib.request.urlopen('http://localhost:8000/api/health')\""]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+volumes:
+  pgdata:

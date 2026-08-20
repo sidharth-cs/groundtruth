@@ -1,0 +1,151 @@
+# Vendor onboarding due-diligence checklist.
+#
+# This file is the rulebook. Adding a rule, changing a threshold, tightening a
+# severity or supporting a new jurisdiction is an edit here — not a code
+# change. The engine in app/domain/rules.py knows how to evaluate rule *types*;
+# it knows nothing about vendor onboarding.
+#
+# Rules are grouped into stages. Stages run in order and are reported
+# separately, so a reviewer sees "identity passed, screening failed" rather
+# than one undifferentiated list.
+
+id: vendor_onboarding_v1
+name: Vendor onboarding due diligence
+version: 1
+description: >
+  Baseline checks applied to a vendor document pile before onboarding is
+  approved. Modelled on the shape of a real KYC screening procedure: establish
+  who the entity is, establish who owns it, confirm it has been screened and
+  the screening was dispositioned, then sanity-check the commercial documents
+  against each other.
+
+stages:
+  - id: identity
+    name: Identity and registration
+    rules:
+      - id: IDN-001
+        title: Registered name must be established from the sources
+        type: required_claim
+        attribute: registered_name
+        severity: high
+        detail: >
+          Onboarding cannot proceed against an entity whose registered name is
+          not evidenced by a source document.
+
+      - id: IDN-002
+        title: Company registration number must be established
+        type: required_claim
+        attribute: company_number
+        severity: high
+        detail: >
+          The registration number is the key every other check joins on.
+
+      - id: IDN-003
+        title: Jurisdiction of incorporation must be established
+        type: required_claim
+        attribute: jurisdiction
+        severity: medium
+        detail: >
+          Jurisdiction determines which sanctions regimes and reporting
+          obligations apply.
+
+  - id: ownership
+    name: Beneficial ownership
+    rules:
+      - id: OWN-001
+        title: At least one beneficial owner must be disclosed
+        type: required_claim
+        attribute: ubo_name
+        severity: high
+        detail: >
+          An entity with no disclosed beneficial owner cannot be risk-assessed.
+
+      - id: OWN-002
+        title: Beneficial ownership must not be contradicted across sources
+        type: no_open_conflict
+        attribute: ubo_percentage
+        severity: high
+        detail: >
+          Two sources disclosing different shareholdings for the same owner is
+          a question for a human, not something to average or take the latest
+          of. Onboarding is blocked until the conflict is dispositioned.
+
+  - id: screening
+    name: Sanctions and adverse media screening
+    rules:
+      - id: SCR-001
+        title: A screening result must exist
+        type: required_claim
+        attribute: screening_result
+        severity: high
+        detail: >
+          An unscreened vendor cannot be onboarded under any circumstances.
+
+      - id: SCR-002
+        title: Screening must be clear, or the alert must be dispositioned
+        type: value_in
+        attribute: screening_result
+        allowed:
+          - "no match"
+          - "clear"
+        severity: high
+        detail: >
+          A potential or true match is not a failure in itself — it is an alert
+          requiring analyst disposition. What is not acceptable is an alert left
+          open while onboarding proceeds.
+
+      - id: SCR-003
+        title: Screening must be recent
+        type: date_within_days
+        attribute: screening_date
+        days: 180
+        severity: medium
+        detail: >
+          Watchlists change. A screening older than six months is stale and the
+          subject should be re-screened before onboarding.
+
+      - id: SCR-004
+        title: No watchlist alert may be left uncleared
+        type: no_unresolved_watchlist_alert
+        severity: high
+        detail: >
+          SCR-001 to SCR-003 test what the vendor's own paperwork claims about
+          screening. This rule tests what this system found when it screened the
+          parties itself, against the OFAC SDN list. An alert confirmed as a
+          true match, or escalated because it could not be discounted on the
+          evidence available, blocks onboarding. An alert nobody has looked at
+          yet is reported as not evaluated rather than as a pass — silence is
+          not compliance.
+
+  - id: commercial
+    name: Commercial document consistency
+    rules:
+      - id: COM-001
+        title: Invoiced amount must not exceed the contracted value
+        type: numeric_not_greater_than
+        attribute: invoice_total
+        compare_to: contract_value
+        severity: high
+        detail: >
+          An invoice above the contract value indicates either an undisclosed
+          amendment or a billing error. Both need a human before payment.
+
+      - id: COM-002
+        title: Bank details must be evidenced
+        type: required_claim
+        attribute: bank_iban
+        severity: low
+        detail: >
+          Remittance details should be evidenced in the pile rather than taken
+          from correspondence, which is the common vector for payment fraud.
+
+  - id: integrity
+    name: Source integrity
+    rules:
+      - id: INT-001
+        title: No source document may contain instructions aimed at the system
+        type: no_quarantined_documents
+        severity: high
+        detail: >
+          A document that attempts to direct the processing system is reported
+          here. Its content is excluded from extraction and never acted on.

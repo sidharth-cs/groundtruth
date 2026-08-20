@@ -1,0 +1,25 @@
+# Core service
+fastapi>=0.115
+uvicorn[standard]>=0.32
+pydantic>=2.9
+pydantic-settings>=2.6
+python-multipart>=0.0.12
+
+# Agent orchestration
+langgraph>=0.2.50
+langgraph-checkpoint-postgres>=2.0.2
+
+# Storage
+psycopg[binary,pool]>=3.2
+pgvector>=0.3.6
+
+# Document parsing
+pypdf>=5.1
+python-docx>=1.1
+
+# Machine interface
+mcp>=1.1
+
+# Models (optional at runtime — the offline adapter needs neither)
+anthropic>=0.40
+pyyaml>=6.0

@@ -1,0 +1,12 @@
+SANCTIONS AND ADVERSE MEDIA SCREENING RESULT
+
+Subject: Meridian Componentes Holdings Ltd
+Screening provider: Internal watchlist service (synthetic)
+Screened on: 2026-06-23
+Result: potential match
+
+Match detail: name similarity to a listed entity operating in a related
+sector. Analyst review required before onboarding proceeds. No disposition
+has been recorded against this alert.
+
+Reviewer: (unassigned)

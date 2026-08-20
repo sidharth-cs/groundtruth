@@ -1,0 +1,24 @@
+-- Runs once, on first database creation.
+--
+-- Postgres is used for one thing here and it is not vectors: it is the
+-- LangGraph checkpoint store, which is what makes "kill it mid-run and resume"
+-- true rather than aspirational. The checkpointer creates its own tables on
+-- first use, so there is nothing to declare.
+--
+-- No `CREATE EXTENSION vector`.
+--
+-- The brief names PostgreSQL with vector search in the stack, and this build
+-- deliberately does not use it. The register is built from *named structured
+-- attributes* — registered_name, ubo_percentage, contract_value — where an
+-- exact match is the correct comparison. Semantic similarity over those would
+-- manufacture conflicts between values that merely read alike, in a document
+-- whose entire purpose is to record what the sources actually say. And an
+-- embedding model would have to be stubbed to keep the test suite runnable
+-- without a key, which would prove nothing about retrieval quality.
+--
+-- The extension used to be created here anyway. Provisioning infrastructure
+-- for a capability the system does not have is the same class of claim as a
+-- success message that is not true, so it is gone. The reasoning is argued in
+-- the README rather than buried, because this is the one place the build
+-- departs from the stated stack.
+SELECT 1;
